@@ -47,6 +47,7 @@ export function App() {
   const [busy, setBusy] = useState(false);
   const startedAt = useRef<number | null>(null);
   const wonRef = useRef(false);
+  const solutionRef = useRef<Grid>(emptyGrid());
 
   const conflicts = useMemo(() => conflictSet(grid), [grid]);
   const selectedValue = selected ? grid[selected[0]][selected[1]] : 0;
@@ -92,6 +93,7 @@ export function App() {
       setBusy(true);
       window.setTimeout(() => {
         const puzzle = generateSafe(nextDifficulty);
+        solutionRef.current = puzzle.solution;
         setDifficulty(nextDifficulty);
         setGivens(puzzle.givens);
         setGrid(cloneGrid(puzzle.givens));
@@ -232,6 +234,21 @@ export function App() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [clearCell, enterDigit, screen, selected, undo, won]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const probe = {
+      fillSolution: () => {
+        setGrid(cloneGrid(solutionRef.current));
+      },
+      getBest: () => loadBestTimes(),
+      getElapsed: () => elapsed,
+    };
+    window.__miniSudoku = probe;
+    return () => {
+      delete window.__miniSudoku;
+    };
+  }, [elapsed]);
 
   const bestForDifficulty = best[difficulty];
 
