@@ -1,13 +1,13 @@
 {
   "name": "mini-sudoku",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite --open /mini-sudoku/",
+    "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build --base /mini-sudoku/",
     "preview": "vite preview --base /mini-sudoku/",
-    "test": "node --experimental-strip-types --test src/game/sudoku.test.ts"
+    "test": "node --experimental-strip-types --test src/game/*.test.ts"
   },
   "dependencies": {
     "lucide-react": "^0.510.0",

@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Eraser, HelpCircle, Pencil, RotateCcw, Sparkles, Undo2 } from "lucide-react";
-import { formatTime, loadBestTimes, recordBestTime, type BestTimes } from "./game/storage";
+import { Eraser, HelpCircle, Pencil, Sparkles, Undo2 } from "lucide-react";
+import { leaveToPortal } from "./game/portal";
+import {
+  clearProgress,
+  formatTime,
+  loadBestTimes,
+  loadProgress,
+  recordBestTime,
+  saveProgress,
+  type BestTimes,
+  type SavedProgress,
+} from "./game/storage";
 import {
   cloneGrid,
   conflictSet,
@@ -31,10 +41,15 @@ function generateSafe(difficulty: Difficulty) {
   }
 }
 
+function cloneNotes(notes: number[][]): number[][] {
+  return notes.map((row) => row.slice());
+}
+
 export function App() {
   const [screen, setScreen] = useState<Screen>("howto");
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
   const [best, setBest] = useState<BestTimes>(() => loadBestTimes());
+  const [saved, setSaved] = useState<SavedProgress | null>(() => loadProgress());
   const [givens, setGivens] = useState<Grid>(() => emptyGrid());
   const [grid, setGrid] = useState<Grid>(() => emptyGrid());
   const [notes, setNotes] = useState<number[][]>(() => emptyNotes());
@@ -45,22 +60,43 @@ export function App() {
   const [won, setWon] = useState(false);
   const [beatBest, setBeatBest] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
   const startedAt = useRef<number | null>(null);
   const wonRef = useRef(false);
   const solutionRef = useRef<Grid>(emptyGrid());
+  const elapsedRef = useRef(0);
+  elapsedRef.current = elapsed;
 
   const conflicts = useMemo(() => conflictSet(grid), [grid]);
   const selectedValue = selected ? grid[selected[0]][selected[1]] : 0;
   const selectedGiven = selected ? givens[selected[0]][selected[1]] !== 0 : false;
 
   useEffect(() => {
-    if (screen !== "play" || won) return;
+    if (screen !== "play" || won || leaveOpen) return;
     const id = window.setInterval(() => {
       if (startedAt.current === null) return;
       setElapsed(Math.floor((Date.now() - startedAt.current) / 1000));
     }, 250);
     return () => window.clearInterval(id);
-  }, [screen, won]);
+  }, [leaveOpen, screen, won]);
+
+  const snapshotProgress = useCallback((): SavedProgress => {
+    const seconds =
+      startedAt.current !== null
+        ? Math.max(0, Math.floor((Date.now() - startedAt.current) / 1000))
+        : elapsedRef.current;
+    return {
+      difficulty,
+      givens: cloneGrid(givens),
+      grid: cloneGrid(grid),
+      notes: cloneNotes(notes),
+      selected,
+      pencil,
+      history: history.map((move) => ({ ...move })),
+      elapsed: seconds,
+      solution: cloneGrid(solutionRef.current),
+    };
+  }, [difficulty, givens, grid, history, notes, pencil, selected]);
 
   const applyMove = useCallback((move: Move, record: boolean) => {
     setGrid((prev) => {
@@ -88,30 +124,48 @@ export function App() {
     if (record) setHistory((prev) => [...prev, move]);
   }, []);
 
-  const startPuzzle = useCallback(
-    (nextDifficulty: Difficulty) => {
-      setBusy(true);
-      window.setTimeout(() => {
-        const puzzle = generateSafe(nextDifficulty);
-        solutionRef.current = puzzle.solution;
-        setDifficulty(nextDifficulty);
-        setGivens(puzzle.givens);
-        setGrid(cloneGrid(puzzle.givens));
-        setNotes(emptyNotes());
-        setSelected(null);
-        setPencil(false);
-        setHistory([]);
-        setElapsed(0);
-        setWon(false);
-        setBeatBest(false);
-        wonRef.current = false;
-        startedAt.current = Date.now();
-        setScreen("play");
-        setBusy(false);
-      }, 20);
-    },
-    [],
-  );
+  const startPuzzle = useCallback((nextDifficulty: Difficulty) => {
+    setBusy(true);
+    window.setTimeout(() => {
+      const puzzle = generateSafe(nextDifficulty);
+      clearProgress();
+      setSaved(null);
+      solutionRef.current = puzzle.solution;
+      setDifficulty(nextDifficulty);
+      setGivens(puzzle.givens);
+      setGrid(cloneGrid(puzzle.givens));
+      setNotes(emptyNotes());
+      setSelected(null);
+      setPencil(false);
+      setHistory([]);
+      setElapsed(0);
+      setWon(false);
+      setBeatBest(false);
+      setLeaveOpen(false);
+      wonRef.current = false;
+      startedAt.current = Date.now();
+      setScreen("play");
+      setBusy(false);
+    }, 20);
+  }, []);
+
+  const continuePuzzle = useCallback((progress: SavedProgress) => {
+    solutionRef.current = cloneGrid(progress.solution);
+    setDifficulty(progress.difficulty);
+    setGivens(cloneGrid(progress.givens));
+    setGrid(cloneGrid(progress.grid));
+    setNotes(cloneNotes(progress.notes));
+    setSelected(progress.selected);
+    setPencil(progress.pencil);
+    setHistory(progress.history.map((move) => ({ ...move })));
+    setElapsed(progress.elapsed);
+    setWon(false);
+    setBeatBest(false);
+    setLeaveOpen(false);
+    wonRef.current = false;
+    startedAt.current = Date.now() - progress.elapsed * 1000;
+    setScreen("play");
+  }, []);
 
   useEffect(() => {
     if (screen !== "play" || wonRef.current) return;
@@ -127,6 +181,8 @@ export function App() {
     setBeatBest(previous === null || seconds < previous);
     setWon(true);
     setSelected(null);
+    clearProgress();
+    setSaved(null);
   }, [best, difficulty, elapsed, grid, screen]);
 
   const enterDigit = useCallback(
@@ -197,8 +253,55 @@ export function App() {
     });
   }, [won]);
 
+  const pauseTimer = useCallback(() => {
+    if (startedAt.current === null) return;
+    const seconds = Math.max(0, Math.floor((Date.now() - startedAt.current) / 1000));
+    setElapsed(seconds);
+    elapsedRef.current = seconds;
+    startedAt.current = null;
+  }, []);
+
+  const resumeTimer = useCallback(() => {
+    if (wonRef.current || startedAt.current !== null) return;
+    startedAt.current = Date.now() - elapsedRef.current * 1000;
+  }, []);
+
+  const requestLeave = useCallback(() => {
+    if (screen === "play" && !wonRef.current) {
+      pauseTimer();
+      setLeaveOpen(true);
+      return;
+    }
+    leaveToPortal();
+  }, [pauseTimer, screen]);
+
+  const stayHere = useCallback(() => {
+    setLeaveOpen(false);
+    if (screen === "play" && !wonRef.current) resumeTimer();
+  }, [resumeTimer, screen]);
+
+  const saveAndLeave = useCallback(() => {
+    const progress = snapshotProgress();
+    saveProgress(progress);
+    setSaved(progress);
+    leaveToPortal();
+  }, [snapshotProgress]);
+
+  const discardAndLeave = useCallback(() => {
+    clearProgress();
+    setSaved(null);
+    leaveToPortal();
+  }, []);
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
+      if (leaveOpen) {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          stayHere();
+        }
+        return;
+      }
       if (screen !== "play" || won) return;
       if (import.meta.env.DEV && event.key === "Enter" && event.shiftKey && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
@@ -238,7 +341,7 @@ export function App() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [clearCell, enterDigit, screen, selected, undo, won]);
+  }, [clearCell, enterDigit, leaveOpen, screen, selected, stayHere, undo, won]);
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
@@ -248,6 +351,8 @@ export function App() {
       },
       getBest: () => loadBestTimes(),
       getElapsed: () => elapsed,
+      hasProgress: () => !!loadProgress(),
+      getProgress: () => loadProgress(),
     };
     window.__miniSudoku = probe;
     return () => {
@@ -265,7 +370,10 @@ export function App() {
           onDifficulty={setDifficulty}
           best={best}
           busy={busy}
+          saved={saved}
           onStart={() => startPuzzle(difficulty)}
+          onContinue={() => saved && continuePuzzle(saved)}
+          onGames={requestLeave}
         />
       ) : (
         <PlayScreen
@@ -291,8 +399,11 @@ export function App() {
           onPencil={() => setPencil((value) => !value)}
           onNew={() => startPuzzle(difficulty)}
           onHelp={() => setScreen("howto")}
-          onDifficulty={(next) => startPuzzle(next)}
+          onGames={requestLeave}
         />
+      )}
+      {leaveOpen && (
+        <LeaveDialog onSave={saveAndLeave} onDiscard={discardAndLeave} onStay={stayHere} />
       )}
     </div>
   );
@@ -303,17 +414,24 @@ function StartScreen({
   onDifficulty,
   best,
   busy,
+  saved,
   onStart,
+  onContinue,
+  onGames,
 }: {
   difficulty: Difficulty;
   onDifficulty: (value: Difficulty) => void;
   best: BestTimes;
   busy: boolean;
+  saved: SavedProgress | null;
   onStart: () => void;
+  onContinue: () => void;
+  onGames: () => void;
 }) {
   return (
     <div className="start-screen">
       <header className="start-top">
+        <GamesBack onClick={onGames} />
         <div className="brand">
           <p className="kicker">Playadda</p>
           <h1>{GAME_TITLE}</h1>
@@ -362,8 +480,18 @@ function StartScreen({
           ))}
         </div>
 
-        <button type="button" className="cta start-go" onClick={onStart} disabled={busy}>
-          {busy ? "Shuffling…" : "Start"}
+        {saved && (
+          <button type="button" className="cta start-go" onClick={onContinue} disabled={busy}>
+            Continue {saved.difficulty === "easy" ? "Easy" : "Medium"} · {formatTime(saved.elapsed)}
+          </button>
+        )}
+        <button
+          type="button"
+          className={`cta start-go${saved ? " ghost" : ""}`}
+          onClick={onStart}
+          disabled={busy}
+        >
+          {busy ? "Shuffling…" : saved ? "Start fresh" : "Start"}
         </button>
         <p className="start-version">Playadda · v{GAME_VERSION}</p>
       </section>
@@ -394,7 +522,7 @@ function PlayScreen({
   onPencil,
   onNew,
   onHelp,
-  onDifficulty,
+  onGames,
 }: {
   difficulty: Difficulty;
   best: number | null;
@@ -418,11 +546,12 @@ function PlayScreen({
   onPencil: () => void;
   onNew: () => void;
   onHelp: () => void;
-  onDifficulty: (value: Difficulty) => void;
+  onGames: () => void;
 }) {
   return (
     <div className="play-screen">
       <header className="topbar">
+        <GamesBack onClick={onGames} />
         <div className="brand compact">
           <p className="kicker">Playadda</p>
           <h1>{GAME_TITLE}</h1>
@@ -536,26 +665,6 @@ function PlayScreen({
           <Pencil size={16} />
           Notes
         </button>
-        <button type="button" className="tool" onClick={onNew} disabled={busy}>
-          <RotateCcw size={16} />
-          New
-        </button>
-      </div>
-
-      <div className="modes play-modes" role="radiogroup" aria-label="Difficulty">
-        {(["easy", "medium"] as const).map((value) => (
-          <button
-            key={value}
-            type="button"
-            role="radio"
-            aria-checked={difficulty === value}
-            className={`chip${difficulty === value ? " chip-on" : ""}`}
-            onClick={() => onDifficulty(value)}
-            disabled={busy}
-          >
-            {value}
-          </button>
-        ))}
       </div>
 
       {won && (
@@ -578,6 +687,45 @@ function PlayScreen({
         </div>
       )}
     </div>
+  );
+}
+
+function LeaveDialog({
+  onSave,
+  onDiscard,
+  onStay,
+}: {
+  onSave: () => void;
+  onDiscard: () => void;
+  onStay: () => void;
+}) {
+  return (
+    <div className="leave-screen" role="dialog" aria-labelledby="leave-title" aria-modal="true">
+      <div className="leave-card">
+        <p className="kicker">Leave puzzle</p>
+        <h2 id="leave-title">Save this game?</h2>
+        <p className="leave-copy">
+          Save keeps this board, notes, and timer for next time. Discard throws the puzzle away.
+        </p>
+        <button type="button" className="cta" onClick={onSave}>
+          Save
+        </button>
+        <button type="button" className="cta ghost danger" onClick={onDiscard}>
+          Discard
+        </button>
+        <button type="button" className="cta ghost" onClick={onStay}>
+          Stay
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function GamesBack({ onClick }: { onClick: () => void }) {
+  return (
+    <button type="button" className="games-back" onClick={onClick} aria-label="Back to Games">
+      ← Games
+    </button>
   );
 }
 
