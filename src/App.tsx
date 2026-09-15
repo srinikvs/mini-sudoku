@@ -548,20 +548,22 @@ function PlayScreen({
       </div>
 
       {won && (
-        <div className="win-screen" role="dialog" aria-labelledby="win-title">
-          <p className="kicker">{beatBest ? "New BEST time" : "Puzzle complete"}</p>
-          <h2 id="win-title">{beatBest ? "You beat your best" : "Nicely solved"}</h2>
-          <p className="win-time">{formatTime(elapsed)}</p>
-          <p className="win-sub">
-            BEST {formatTime(best)} · {difficulty} · v{GAME_VERSION}
-          </p>
-          <button type="button" className="cta" onClick={onNew} disabled={busy}>
-            <Sparkles size={16} />
-            New puzzle
-          </button>
-          <button type="button" className="cta ghost" onClick={onHelp}>
-            How to play
-          </button>
+        <div className="win-screen" role="dialog" aria-labelledby="win-title" aria-modal="true">
+          <div className="win-card">
+            <p className="kicker">{beatBest ? "New BEST time" : "Puzzle complete"}</p>
+            <h2 id="win-title">{beatBest ? "You beat your best" : "Nicely solved"}</h2>
+            <p className="win-time">{formatTime(elapsed)}</p>
+            <p className="win-sub">
+              BEST {formatTime(best)} · {difficulty} · v{GAME_VERSION}
+            </p>
+            <button type="button" className="cta" onClick={onNew} disabled={busy}>
+              <Sparkles size={16} />
+              New puzzle
+            </button>
+            <button type="button" className="cta ghost" onClick={onHelp}>
+              How to play
+            </button>
+          </div>
         </div>
       )}
     </div>

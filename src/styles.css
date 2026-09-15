@@ -332,18 +332,21 @@ h1 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: repeat(3, 1fr);
-  gap: 5px;
+  gap: 8px;
   aspect-ratio: 1;
-  background: #1a1714;
-  border-radius: 14px;
-  padding: 5px;
+  background: #141210;
+  border-radius: 16px;
+  padding: 8px;
 }
 
 .box {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  gap: 2px;
+  gap: 3px;
+  background: #3d362e;
+  border-radius: 10px;
+  padding: 3px;
 }
 
 .cell {
@@ -457,31 +460,54 @@ h1 {
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
-  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  backdrop-filter: blur(12px);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  text-align: center;
+  padding: max(24px, env(safe-area-inset-top, 0px)) 16px
+    max(24px, env(safe-area-inset-bottom, 0px));
 }
 
-.win-screen .cta {
-  width: min(280px, 100%);
+.win-card {
+  width: min(360px, 100%);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: var(--radius-xl);
+  padding: 26px 22px 20px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.win-card .kicker {
+  color: #c45c26;
+}
+
+.win-card h2 {
+  color: var(--ink);
+}
+
+.win-card .cta {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.win-card .cta.ghost {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--ink) 16%, transparent);
 }
 
 .win-time {
-  margin: 8px 0 4px;
-  font-size: clamp(3rem, 14vw, 4.6rem);
+  margin: 10px 0 4px;
+  font-size: clamp(3rem, 14vw, 4.4rem);
   font-weight: 700;
   letter-spacing: -0.05em;
   font-variant-numeric: tabular-nums;
 }
 
 .win-sub {
-  margin: 0 0 8px;
-  color: var(--muted);
+  margin: 0 0 10px;
+  color: #7a7368;
 }
 
 @media (min-width: 720px) {
