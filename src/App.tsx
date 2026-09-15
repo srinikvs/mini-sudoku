@@ -200,6 +200,11 @@ export function App() {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (screen !== "play" || won) return;
+      if (import.meta.env.DEV && event.key === "Enter" && event.shiftKey && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setGrid(cloneGrid(solutionRef.current));
+        return;
+      }
       if (event.key === "z" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         undo();
@@ -326,7 +331,12 @@ function StartScreen({
       </div>
 
       <section className="start-card" aria-labelledby="howto-title">
-        <p className="eyebrow">How to play</p>
+        <div className="card-head">
+          <p className="eyebrow">How to play</p>
+          <span className="ver-badge ink" aria-label={`Version ${GAME_VERSION}`}>
+            v{GAME_VERSION}
+          </span>
+        </div>
         <h2 id="howto-title">Fill every cell without repeats</h2>
         <ol className="howto-list">
           {HOW_TO.map((step, index) => (
@@ -355,6 +365,7 @@ function StartScreen({
         <button type="button" className="cta start-go" onClick={onStart} disabled={busy}>
           {busy ? "Shuffling…" : "Start"}
         </button>
+        <p className="start-version">Playadda · v{GAME_VERSION}</p>
       </section>
     </div>
   );
