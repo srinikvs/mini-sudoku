@@ -94,6 +94,11 @@ button:disabled {
 
 .brand.compact {
   gap: 2px;
+  min-width: 0;
+}
+
+.brand.compact .kicker {
+  display: none;
 }
 
 .kicker {
@@ -134,6 +139,22 @@ h1 {
 .topbar .icon-btn {
   grid-column: 3;
   justify-self: end;
+}
+
+.games-back {
+  grid-column: 1;
+  justify-self: start;
+  min-height: 44px;
+  padding: 10px 14px 10px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
 }
 
 .start-tag {
@@ -265,11 +286,6 @@ h1 {
   margin-top: 18px;
 }
 
-.play-modes {
-  margin-top: 0;
-  justify-content: center;
-}
-
 .chip {
   height: 40px;
   min-width: 88px;
@@ -282,20 +298,10 @@ h1 {
   text-transform: capitalize;
 }
 
-.play-modes .chip {
-  border-color: var(--line);
-  color: var(--muted);
-}
-
 .chip-on {
   background: #141210;
   color: #f3eee4;
   border-color: transparent;
-}
-
-.play-modes .chip-on {
-  background: var(--text);
-  color: var(--bg);
 }
 
 .cta,
@@ -322,12 +328,23 @@ h1 {
   border: 1px solid var(--line);
 }
 
+.start-card .cta.ghost {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--ink) 16%, transparent);
+}
+
+.cta.ghost.danger {
+  color: var(--coral);
+  border-color: color-mix(in srgb, var(--coral) 45%, transparent);
+}
+
 .icon-btn,
 .tool,
 .pad-btn,
 .chip,
 .cta,
-.cell {
+.cell,
+.games-back {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -449,7 +466,7 @@ h1 {
 
 .toolbar {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -478,7 +495,8 @@ h1 {
   opacity: 0.42;
 }
 
-.win-screen {
+.win-screen,
+.leave-screen {
   position: fixed;
   inset: 0;
   z-index: 40;
@@ -491,7 +509,12 @@ h1 {
     max(24px, env(safe-area-inset-bottom, 0px));
 }
 
-.win-card {
+.leave-screen {
+  z-index: 50;
+}
+
+.win-card,
+.leave-card {
   width: min(360px, 100%);
   background: var(--paper);
   color: var(--ink);
@@ -501,22 +524,38 @@ h1 {
   box-shadow: var(--shadow);
 }
 
-.win-card .kicker {
+.win-card .kicker,
+.leave-card .kicker {
   color: #c45c26;
 }
 
-.win-card h2 {
+.win-card h2,
+.leave-card h2 {
   color: var(--ink);
 }
 
-.win-card .cta {
+.win-card .cta,
+.leave-card .cta {
   width: 100%;
   margin-top: 12px;
 }
 
-.win-card .cta.ghost {
+.win-card .cta.ghost,
+.leave-card .cta.ghost {
   color: var(--ink);
   border-color: color-mix(in srgb, var(--ink) 16%, transparent);
+}
+
+.leave-card .cta.ghost.danger {
+  color: #9a3412;
+  border-color: color-mix(in srgb, var(--coral) 55%, transparent);
+}
+
+.leave-copy {
+  margin: 10px 0 6px;
+  color: #7a7368;
+  line-height: 1.45;
+  font-size: 0.95rem;
 }
 
 .win-time {
@@ -563,7 +602,8 @@ h1 {
   .chip,
   .cta,
   .tool,
-  .pad-btn {
+  .pad-btn,
+  .games-back {
     transition: none;
   }
 }
