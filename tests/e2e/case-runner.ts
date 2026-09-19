@@ -74,20 +74,18 @@ async function applyExpect(page: Page, exp: Expectation, caseId: string): Promis
       return;
     }
     case "storageBest": {
+      const difficulty = String(exp.difficulty ?? "easy") as "easy" | "medium";
       await expect
         .poll(
           async () => {
             const store = await readStore(page);
-            if (!store) return null;
-            const difficulty = String(exp.difficulty ?? "easy") as "easy" | "medium";
-            return store[difficulty];
+            const value = store?.[difficulty] ?? null;
+            if (exp.lessThan != null) return value != null && value < Number(exp.lessThan);
+            return value === (exp.value == null ? null : Number(exp.value));
           },
           { message: tag },
         )
-        .toSatisfy((value: number | null) => {
-          if (exp.lessThan != null) return value != null && value < Number(exp.lessThan);
-          return value === (exp.value == null ? null : Number(exp.value));
-        });
+        .toBe(true);
       return;
     }
     case "storageProgress": {
