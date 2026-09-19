@@ -30,7 +30,7 @@ Gate mapping: E2E **B7 / B9 / B10 / B11** and Pixel **C14** use `gate: "block"`.
 npm install
 npx playwright install --with-deps chromium
 
-npm test                 # existing sudoku/storage tests + tests/cases/*.json (layer=unit)
+npm test                 # tsx --test: existing sudoku/storage tests + JSON unit cases
 npm run test:e2e         # Playwright Chromium; loads e2e/pixel JSON cases
 npm run test:e2e:pixel   # Pixel project only (412×915)
 ```
@@ -63,7 +63,7 @@ Set **`DEPLOY=false`**. These `*-ci` jobs must not rsync or publish `dist/`.
 ```bash
 npm ci
 npx playwright install --with-deps chromium
-npm test
+npm test                  # tsx --test (do not use --experimental-strip-types)
 npm run test:e2e:pixel    # C14 block gate; mini-sudoku-ci must run this
 npm run test:e2e          # pixel catalog (e2e + pixel JSON cases)
 ```

@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build --base /mini-sudoku/",
     "preview": "vite preview --base /mini-sudoku/",
-    "test": "node --experimental-strip-types --test src/game/*.test.ts",
+    "test": "tsx --test src/game/*.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:pixel": "playwright test --project=pixel"
   },
@@ -22,6 +22,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "tsx": "^4.19.2",
     "typescript": "~5.7.2",
     "vite": "^6.0.0"
   }
