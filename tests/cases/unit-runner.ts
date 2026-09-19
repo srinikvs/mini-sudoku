@@ -53,7 +53,8 @@ function applyExpect(exp: Expectation, caseId: string): void {
   switch (exp.assert) {
     case "bestTime": {
       const times = loadBestTimes();
-      assert.equal(times[asDifficulty(exp.difficulty)], Number(exp.value), tag);
+      const expected = exp.value == null ? null : Number(exp.value);
+      assert.equal(times[asDifficulty(exp.difficulty)], expected, tag);
       return;
     }
     case "progressPresent": {
