@@ -1,0 +1,31 @@
+{
+  "id": "C14",
+  "layer": "pixel",
+  "title": "Pixel 412×915: game usable without critical clip of HUD, board, pad, or toolbar",
+  "gate": "block",
+  "steps": [
+    { "op": "seedPlay", "preset": "playable", "screen": "play" },
+    { "op": "expect", "assert": "viewport", "width": 412, "height": 915 },
+    { "op": "expect", "assert": "visible", "testId": "hud" },
+    { "op": "expect", "assert": "visible", "testId": "board" },
+    { "op": "expect", "assert": "visible", "testId": "pad" },
+    { "op": "expect", "assert": "visible", "testId": "toolbar" },
+    {
+      "op": "expect",
+      "assert": "noVerticalClip",
+      "testId": ["hud", "board", "pad", "toolbar", "games-back", "version"]
+    },
+    { "op": "emulateSafeArea", "sat": 24, "sab": 34 }
+  ],
+  "expect": [
+    { "assert": "viewport", "width": 412, "height": 915 },
+    { "assert": "visible", "testId": "board" },
+    { "assert": "visible", "testId": "pad" },
+    {
+      "assert": "noVerticalClip",
+      "testId": ["hud", "board", "pad", "toolbar"]
+    },
+    { "assert": "boardUsable", "minWidth": 240, "minHeight": 240 },
+    { "assert": "controlsAboveHomeBar", "sab": 34, "testId": ["pad", "toolbar"] }
+  ]
+}

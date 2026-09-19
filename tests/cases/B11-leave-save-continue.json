@@ -1,0 +1,33 @@
+{
+  "id": "B11",
+  "layer": "e2e",
+  "title": "Games ← offers Save / Discard / Stay; Continue restores the board after Save",
+  "gate": "block",
+  "steps": [
+    { "op": "seedPlay", "preset": "playable", "screen": "play" },
+    { "op": "clickCell", "row": 0, "col": 1 },
+    { "op": "clickPad", "digit": 6 },
+    { "op": "expect", "assert": "cellValue", "row": 0, "col": 1, "value": 6 },
+    { "op": "click", "testId": "games-back" },
+    { "op": "expect", "assert": "visible", "testId": "leave-dialog" },
+    { "op": "expect", "assert": "visible", "testId": "leave-save" },
+    { "op": "expect", "assert": "visible", "testId": "leave-discard" },
+    { "op": "expect", "assert": "visible", "testId": "leave-stay" },
+    { "op": "click", "testId": "leave-stay" },
+    { "op": "expect", "assert": "hidden", "testId": "leave-dialog" },
+    { "op": "expect", "assert": "visible", "testId": "play-screen" },
+    { "op": "expect", "assert": "cellValue", "row": 0, "col": 1, "value": 6 },
+    { "op": "click", "testId": "games-back" },
+    { "op": "click", "testId": "leave-save" },
+    { "op": "returnToGame" },
+    { "op": "waitVisible", "testId": "start-screen" },
+    { "op": "expect", "assert": "visible", "testId": "continue" },
+    { "op": "click", "testId": "continue" },
+    { "op": "waitVisible", "testId": "play-screen" }
+  ],
+  "expect": [
+    { "assert": "visible", "testId": "play-screen" },
+    { "assert": "cellValue", "row": 0, "col": 1, "value": 6 },
+    { "assert": "storageProgress", "present": true }
+  ]
+}

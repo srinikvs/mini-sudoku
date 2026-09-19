@@ -50,10 +50,14 @@ Best times are seconds. `progress` is `null` when nothing is saved. v1 `{ "easy"
 ```bash
 npm install
 npm run dev      # http://localhost:5173/mini-sudoku/
-npm test         # generator uniqueness + save/restore
-npm run build    # writes dist/
-npm run preview  # http://localhost:4173/mini-sudoku/
+npm test                 # generator + storage + JSON unit cases
+npm run test:e2e         # Playwright Chromium (local preview unless BASE_URL)
+npm run test:e2e:pixel   # 412×915 pixel project
+npm run build            # writes dist/
+npm run preview          # http://localhost:4173/mini-sudoku/
 ```
+
+Automated cases live in `tests/cases/*.json`. See [TESTING.md](TESTING.md) for runners, `BASE_URL` live smoke (playaddatest + prod), and Jenkins `mini-sudoku-ci` (`DEPLOY=false`).
 
 ## Jenkins
 
