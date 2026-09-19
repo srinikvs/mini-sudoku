@@ -363,7 +363,7 @@ export function App() {
   const bestForDifficulty = best[difficulty];
 
   return (
-    <div className="app">
+    <div className="app" data-testid="app">
       {screen === "howto" ? (
         <StartScreen
           difficulty={difficulty}
@@ -429,13 +429,13 @@ function StartScreen({
   onGames: () => void;
 }) {
   return (
-    <div className="start-screen">
+    <div className="start-screen" data-testid="start-screen">
       <header className="start-top">
         <GamesBack onClick={onGames} />
         <div className="brand">
           <p className="kicker">Playadda</p>
           <h1>{GAME_TITLE}</h1>
-          <span className="ver-badge" aria-label={`Version ${GAME_VERSION}`}>
+          <span className="ver-badge" data-testid="version" aria-label={`Version ${GAME_VERSION}`}>
             v{GAME_VERSION}
           </span>
         </div>
@@ -444,19 +444,19 @@ function StartScreen({
       <p className="start-tag">A 6×6 puzzle with 2×3 boxes. Fast, tidy, and phone-first.</p>
 
       <div className="best-row" aria-live="polite">
-        <BestChip label="BEST Easy" value={formatTime(best.easy)} />
-        <BestChip label="BEST Medium" value={formatTime(best.medium)} />
+        <BestChip label="BEST Easy" value={formatTime(best.easy)} testId="best-easy" />
+        <BestChip label="BEST Medium" value={formatTime(best.medium)} testId="best-medium" />
       </div>
 
-      <section className="start-card" aria-labelledby="howto-title">
+      <section className="start-card" data-testid="start-panel" aria-labelledby="howto-title">
         <div className="card-head">
           <p className="eyebrow">How to play</p>
-          <span className="ver-badge ink" aria-label={`Version ${GAME_VERSION}`}>
+          <span className="ver-badge ink" data-testid="howto-version" aria-label={`Version ${GAME_VERSION}`}>
             v{GAME_VERSION}
           </span>
         </div>
         <h2 id="howto-title">Fill every cell without repeats</h2>
-        <ol className="howto-list">
+        <ol className="howto-list" data-testid="howto">
           {HOW_TO.map((step, index) => (
             <li key={step}>
               <span className="howto-n">{index + 1}</span>
@@ -473,6 +473,7 @@ function StartScreen({
               role="radio"
               aria-checked={difficulty === value}
               className={`chip${difficulty === value ? " chip-on" : ""}`}
+              data-testid={`difficulty-${value}`}
               onClick={() => onDifficulty(value)}
             >
               {value}
@@ -481,19 +482,22 @@ function StartScreen({
         </div>
 
         {saved && (
-          <button type="button" className="cta start-go" onClick={onContinue} disabled={busy}>
+          <button type="button" className="cta start-go" data-testid="continue" onClick={onContinue} disabled={busy}>
             Continue {saved.difficulty === "easy" ? "Easy" : "Medium"} · {formatTime(saved.elapsed)}
           </button>
         )}
         <button
           type="button"
           className={`cta start-go${saved ? " ghost" : ""}`}
+          data-testid="start"
           onClick={onStart}
           disabled={busy}
         >
           {busy ? "Shuffling…" : saved ? "Start fresh" : "Start"}
         </button>
-        <p className="start-version">Playadda · v{GAME_VERSION}</p>
+        <p className="start-version" data-testid="start-version">
+          Playadda · v{GAME_VERSION}
+        </p>
       </section>
     </div>
   );
@@ -549,13 +553,13 @@ function PlayScreen({
   onGames: () => void;
 }) {
   return (
-    <div className="play-screen">
+    <div className="play-screen" data-testid="play-screen">
       <header className="topbar">
         <GamesBack onClick={onGames} />
         <div className="brand compact">
           <p className="kicker">Playadda</p>
           <h1>{GAME_TITLE}</h1>
-          <span className="ver-badge" aria-label={`Version ${GAME_VERSION}`}>
+          <span className="ver-badge" data-testid="version" aria-label={`Version ${GAME_VERSION}`}>
             v{GAME_VERSION}
           </span>
         </div>
@@ -564,19 +568,19 @@ function PlayScreen({
         </button>
       </header>
 
-      <div className="hud">
-        <div className={`best-chip${beatBest && won ? " is-hot" : ""}`} aria-live="polite">
+      <div className="hud" data-testid="hud">
+        <div className={`best-chip${beatBest && won ? " is-hot" : ""}`} data-testid="best" aria-live="polite">
           <span className="stat-label">BEST</span>
           <span className="stat-value">{formatTime(best)}</span>
         </div>
-        <div className="best-chip">
+        <div className="best-chip" data-testid="time">
           <span className="stat-label">TIME</span>
           <span className="stat-value">{formatTime(elapsed)}</span>
         </div>
       </div>
 
       <div className="paper-wrap">
-        <div className="board" role="grid" aria-label="Mini Sudoku board">
+        <div className="board" data-testid="board" role="grid" aria-label="Mini Sudoku board">
           {Array.from({ length: 3 }, (_, boxRow) =>
             Array.from({ length: 2 }, (_, boxCol) => (
               <div className="box" key={`${boxRow}-${boxCol}`} role="presentation">
@@ -611,6 +615,7 @@ function PlayScreen({
                         aria-selected={isSelected}
                         aria-label={`Row ${row + 1}, column ${col + 1}${value ? `, ${value}` : ", empty"}`}
                         className={classes}
+                        data-testid={`cell-${row}-${col}`}
                         onClick={() => onSelect([row, col])}
                       >
                         {value !== 0 ? (
@@ -632,12 +637,13 @@ function PlayScreen({
         </div>
       </div>
 
-      <div className="pad" role="group" aria-label="Number pad">
+      <div className="pad" data-testid="pad" role="group" aria-label="Number pad">
         {DIGITS.map((digit) => (
           <button
             key={digit}
             type="button"
             className={`pad-btn${selectedValue === digit ? " pad-on" : ""}`}
+            data-testid={`pad-${digit}`}
             onClick={() => onDigit(digit)}
             disabled={won || selectedGiven}
           >
@@ -646,7 +652,7 @@ function PlayScreen({
         ))}
       </div>
 
-      <div className="toolbar">
+      <div className="toolbar" data-testid="toolbar">
         <button type="button" className="tool" onClick={onUndo} disabled={!canUndo}>
           <Undo2 size={16} />
           Undo
@@ -669,14 +675,14 @@ function PlayScreen({
 
       {won && (
         <div className="win-screen" role="dialog" aria-labelledby="win-title" aria-modal="true">
-          <div className="win-card">
+          <div className="win-card" data-testid="win-card">
             <p className="kicker">{beatBest ? "New BEST time" : "Puzzle complete"}</p>
             <h2 id="win-title">{beatBest ? "You beat your best" : "Nicely solved"}</h2>
             <p className="win-time">{formatTime(elapsed)}</p>
-            <p className="win-sub">
+            <p className="win-sub" data-testid="win-version">
               BEST {formatTime(best)} · {difficulty} · v{GAME_VERSION}
             </p>
-            <button type="button" className="cta" onClick={onNew} disabled={busy}>
+            <button type="button" className="cta" data-testid="new-puzzle" onClick={onNew} disabled={busy}>
               <Sparkles size={16} />
               New puzzle
             </button>
@@ -700,20 +706,20 @@ function LeaveDialog({
   onStay: () => void;
 }) {
   return (
-    <div className="leave-screen" role="dialog" aria-labelledby="leave-title" aria-modal="true">
+    <div className="leave-screen" data-testid="leave-dialog" role="dialog" aria-labelledby="leave-title" aria-modal="true">
       <div className="leave-card">
         <p className="kicker">Leave puzzle</p>
         <h2 id="leave-title">Save this game?</h2>
         <p className="leave-copy">
           Save keeps this board, notes, and timer for next time. Discard throws the puzzle away.
         </p>
-        <button type="button" className="cta" onClick={onSave}>
+        <button type="button" className="cta" data-testid="leave-save" onClick={onSave}>
           Save
         </button>
-        <button type="button" className="cta ghost danger" onClick={onDiscard}>
+        <button type="button" className="cta ghost danger" data-testid="leave-discard" onClick={onDiscard}>
           Discard
         </button>
-        <button type="button" className="cta ghost" onClick={onStay}>
+        <button type="button" className="cta ghost" data-testid="leave-stay" onClick={onStay}>
           Stay
         </button>
       </div>
@@ -723,15 +729,15 @@ function LeaveDialog({
 
 function GamesBack({ onClick }: { onClick: () => void }) {
   return (
-    <button type="button" className="games-back" onClick={onClick} aria-label="Back to Games">
+    <button type="button" className="games-back" data-testid="games-back" onClick={onClick} aria-label="Back to Games">
       ← Games
     </button>
   );
 }
 
-function BestChip({ label, value }: { label: string; value: string }) {
+function BestChip({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
-    <div className="best-chip">
+    <div className="best-chip" data-testid={testId}>
       <span className="stat-label">{label}</span>
       <span className="stat-value">{value}</span>
     </div>

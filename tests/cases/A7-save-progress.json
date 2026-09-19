@@ -1,0 +1,30 @@
+{
+  "id": "A7",
+  "layer": "unit",
+  "title": "Save progress writes the board; load restores the same grid and timer",
+  "gate": "optional",
+  "steps": [
+    {
+      "op": "saveProgress",
+      "preset": "midGame",
+      "easy": 54
+    }
+  ],
+  "expect": [
+    { "assert": "progressPresent", "value": true },
+    {
+      "assert": "progressGrid",
+      "difficulty": "easy",
+      "elapsed": 12,
+      "grid": [
+        [1, 6, 4, 3, 5, 0],
+        [5, 0, 2, 4, 6, 0],
+        [0, 1, 0, 6, 2, 3],
+        [3, 0, 0, 5, 0, 4],
+        [0, 0, 1, 2, 3, 5],
+        [0, 5, 3, 1, 0, 0]
+      ]
+    },
+    { "assert": "bestTime", "difficulty": "easy", "value": 54 }
+  ]
+}

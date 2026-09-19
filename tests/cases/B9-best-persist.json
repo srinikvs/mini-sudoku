@@ -1,0 +1,18 @@
+{
+  "id": "B9",
+  "layer": "e2e",
+  "title": "BEST updates in localStorage when a faster time is recorded",
+  "gate": "block",
+  "steps": [
+    { "op": "seedPlay", "preset": "oneAway", "easy": 999, "screen": "play" },
+    { "op": "expect", "assert": "storageBest", "difficulty": "easy", "value": 999 },
+    { "op": "clickCell", "row": 0, "col": 1 },
+    { "op": "clickPad", "digit": 6 },
+    { "op": "waitVisible", "testId": "win-card" }
+  ],
+  "expect": [
+    { "assert": "visible", "testId": "win-card" },
+    { "assert": "storageBest", "difficulty": "easy", "lessThan": 999 },
+    { "assert": "text", "testId": "best", "match": "0:\\d{2}" }
+  ]
+}

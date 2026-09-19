@@ -1,0 +1,15 @@
+{
+  "id": "A5",
+  "layer": "unit",
+  "title": "High-score persist: beating BEST writes localStorage; slower times do not overwrite",
+  "gate": "optional",
+  "steps": [
+    { "op": "recordBest", "difficulty": "easy", "prior": 80, "seconds": 40 },
+    { "op": "expect", "assert": "bestTime", "difficulty": "easy", "value": 40 },
+    { "op": "recordBest", "difficulty": "easy", "reset": false, "seconds": 90 }
+  ],
+  "expect": [
+    { "assert": "bestTime", "difficulty": "easy", "value": 40 },
+    { "assert": "bestTime", "difficulty": "medium", "value": null }
+  ]
+}

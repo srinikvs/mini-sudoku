@@ -1,0 +1,20 @@
+{
+  "id": "B10",
+  "layer": "e2e",
+  "title": "Easy / Medium / New hide once play starts",
+  "gate": "block",
+  "steps": [
+    { "op": "openFresh" },
+    { "op": "expect", "assert": "visible", "testId": "difficulty-easy" },
+    { "op": "expect", "assert": "visible", "testId": "difficulty-medium" },
+    { "op": "click", "testId": "start" },
+    { "op": "waitVisible", "testId": "play-screen" }
+  ],
+  "expect": [
+    { "assert": "visible", "testId": "board" },
+    { "assert": "hidden", "testId": "difficulty-easy" },
+    { "assert": "hidden", "testId": "difficulty-medium" },
+    { "assert": "hidden", "testId": "new-puzzle" },
+    { "assert": "count", "testId": "start-screen", "value": 0 }
+  ]
+}
